@@ -32,7 +32,7 @@
 #
 # Task 6. Calculate Downscaling Uncertainty D(x).
 #
-# Task 7. Calculate Experiemnt (MSD definition) Uncertainty S(x).
+# Task 7. Calculate Experiment (MSD definition) Uncertainty S(x).
 #
 # Task 8. Calculate total variance T(x) = V(x) + M(t) + D(x) + S(x)
 #
@@ -42,7 +42,7 @@
 # 
 # Write output to a csv file for later analysis and plotting
 #
-###########Initial setup and common variables##################################
+#' ##########Initial setup and common variables##################################
 rm(list=ls(all=TRUE))
 library(tidyverse)
 
@@ -53,11 +53,11 @@ nyrs <- 30           # number of years to define climatology
 variable <- "duration"     # intensity or duration
 
 save_plots <- TRUE
-plot_dir <- file.path(paste0("Z:/zraid_data2/nicaragua/variance_partition/plots_",variable))
+plot_dir <- file.path(paste0("Z:/zraid_data2/nicaragua/variance_partition/plots_test_",variable))
 #plot_dir <- file.path(paste0("./plots_",variable))
 if (!dir.exists(plot_dir)) dir.create(plot_dir)
 
-save_dir <- file.path("./data_out")
+save_dir <- file.path("./data_out_test")
 if (!dir.exists(save_dir)) dir.create(save_dir)
 out_fname <- paste0(variable,"_uncertainty_all.csv")
 
@@ -80,7 +80,7 @@ sumna <- function(x) {
   if(all(is.na(x))) NA else sum(x, na.rm = TRUE)
 }
 
-# BEGIN LOOP FOR ALL CELLS #######################################################
+#' BEGIN LOOP FOR ALL CELLS #######################################################
 
 all_cells_list <- list()
 
@@ -91,8 +91,6 @@ for(ii in 1:length(cells)){
   fut_sub <- subset(cmip6_future,cmip6_future$cell==cells[ii])
   model_data <- bind_rows(hist_sub,fut_sub) |> select(-c(cell)) |> rename(Year = time)
   
-  # type <- "Flood Peak" XXX only used for plotting
-  
   ###Clean variables
   rm(hist_sub,fut_sub)
   
@@ -102,7 +100,7 @@ for(ii in 1:length(cells)){
   ds_methods <- unique(model_data$ds_method) 
   years <- unique(model_data$Year) 
   
-  # Task 1 SMOOTH TIME SERIES #####################################################
+  #' Task 1 SMOOTH TIME SERIES #####################################################
   
   window <- 11 #years 
 
@@ -126,7 +124,7 @@ for(ii in 1:length(cells)){
   ###Clean up variables
   rm(dflist,m,s,d)
   
-  # Task 2 CALCULATE HISTORIC PERIOD ANOMALIES #####################################
+  #' Task 2 CALCULATE HISTORIC PERIOD ANOMALIES #####################################
   
   anom_df <- average_df
   for(d in ds_methods){
@@ -147,7 +145,9 @@ for(ii in 1:length(cells)){
   ###Clean up variables
   rm(average_df,m,s)
   
-  # Task 3 FIT LOESS CURVE TO ANOMALIES #################################################
+  #' Task 3 FIT LOESS CURVE TO ANOMALIES #################################################
+
+  dflist <- list()
   
   i <- 0
   for(d in ds_methods){
@@ -202,7 +202,7 @@ for(ii in 1:length(cells)){
   ####Clean up variables
   rm(dflist,d,s,m)
   
-  # Task 4 INTERNAL VARIABILITY ####################################################
+  #' Task 4 INTERNAL VARIABILITY ####################################################
   
   # Use variance for entire nyrs period at each warming level
   # Note 0 warming is used for the historic period as a placeholder
@@ -242,7 +242,7 @@ for(ii in 1:length(cells)){
   # Clean up variables
   rm(m, warm_lvl, ywarm1, ywarm2, dflist)
   
-  # Task 5 MODEL VARIABILITY ##########################################################
+  #' Task 5 MODEL VARIABILITY ##########################################################
   
   # Use specific time windows for warming levels for each model
   dflist <- list()
@@ -296,7 +296,7 @@ for(ii in 1:length(cells)){
   ###Clean Variables
   rm(warm_lvl, s, d, dflist)
   
-  # Task 6 DOWNSCALING VARIABILITY ######################################################
+  #' Task 6 DOWNSCALING VARIABILITY ######################################################
 
   dflist <- list()
   
@@ -327,7 +327,7 @@ for(ii in 1:length(cells)){
   ###Clean Variables
   rm(warm_lvl, s, m, dflist)
 
-  # Task 7 EXPERIMENT (IMPACT DEFINITION) UNCERTAINTY #######################################
+  #' Task 7 EXPERIMENT (IMPACT DEFINITION) UNCERTAINTY #######################################
   dflist <- list()
   
   i <- 0
@@ -357,7 +357,7 @@ for(ii in 1:length(cells)){
   ###Clean Variables
   rm(warm_lvl, d, m, dflist)
   
-  # Task 8 ASSEMBLE TOTAL VARIANCE DATA FRAME ############################################
+  #' Task 8 ASSEMBLE TOTAL VARIANCE DATA FRAME ############################################
   
   uncertainty.list <- list(df.internal, df.model.uncertainty, df.downscaling.uncertainty, df.experiment.uncertainty)
   Total.Variance <- uncertainty.list |> reduce(full_join, by='Level')
@@ -371,7 +371,7 @@ for(ii in 1:length(cells)){
   ###Clean up Variables
   rm(df.internal, df.model.uncertainty, df.downscaling.uncertainty, df.experiment.uncertainty)
   
-  # Task 9 CREATE PLOTS FOR CURRENT CELL ##################################################
+  #' Task 9 CREATE PLOTS FOR CURRENT CELL ##################################################
   
   if(save_plots) {
     
@@ -422,7 +422,7 @@ for(ii in 1:length(cells)){
     plot(p)
     dev.off()
   }
-  # Task 10 ADD CURRENT CELL TO OUTPUT LIST #############################################
+  #' Task 10 ADD CURRENT CELL TO OUTPUT LIST #############################################
 
   all_cells_list[[ii]] <- Total.Variance
   
